@@ -18,7 +18,7 @@ test_data = [torch.from_numpy(d).float().to(device).reshape((200,128,1)) for d i
 (x_test, a_test, y_test, u_test)     = test_data
 print("train shape:", x_train.shape, a_train.shape, y_train.shape, u_train.shape)
 print("test shape:", x_test.shape, a_test.shape, y_test.shape, u_test.shape)
-    
+
 
 np.random.seed(42)
 torch.manual_seed(42)
