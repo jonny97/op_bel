@@ -55,4 +55,4 @@ train_losses = train_model(model, train_data, test_data, criterion, optimizer, n
 validate_model(model, test_data, criterion, device=device)
 
 # save model
-torch.save(model.state_dict(), 'model_save.pth')
+torch.save(model.state_dict(), f'model_save_{example_num}.pth')

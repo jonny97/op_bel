@@ -56,25 +56,25 @@ def train_model(model, train_data, test_data, criterion, optimizer, num_epochs, 
         
         epoch_loss = loss.item()
         train_losses.append(epoch_loss)
-        if epoch % 5000 == 0:
-            print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}")
+        if (epoch+1) % 5000 == 0:
+            print(f"Epoch [{epoch+1}/{num_epochs}], Train Loss: {epoch_loss:.4f}", end = "; ")
             validate_model(model, test_data, criterion, device=device)
-            print(inverse_time_decay(epoch, initial_lr=0.001, decay_factor=0.5, decay_epochs=100000))
+            # print(inverse_time_decay(epoch, initial_lr=0.001, decay_factor=0.5, decay_epochs=100000))
     return train_losses
 
 def validate_model(model, test_data, criterion, device):
     x_test, a_test, y_test, u_test = test_data
     model.eval()  # Set the model to evaluation mode
-    val_loss = 0.0
-    rel_l2_loss = 0.0
     with torch.no_grad():  # Disable gradient calculation during validation
         actual_batch_size = u_test.shape[0]
         outputs = model(x_test, a_test, y_test)
         loss = criterion(outputs, u_test)
-        val_loss += loss.item()
+        val_loss = loss.item()
         diff_norms = torch.norm(outputs.reshape(actual_batch_size,-1) - u_test.reshape(actual_batch_size,-1), dim=1)
         y_norms = torch.norm(u_test.reshape(actual_batch_size,-1), dim=1)
-        rel_l2_loss += torch.mean(diff_norms/y_norms)   
-    
-    print(f"Validation Loss: {val_loss:.5f}")
-    print(f"mean Relative L2 Loss: {rel_l2_loss:.5f}")
+        rel_l2_loss = torch.mean(diff_norms/y_norms) 
+        u_test_mean = torch.mean(u_test, dim=1, keepdim=True)  
+        r2_numerator = torch.sum((outputs - u_test)**2)
+        r2_denominator = torch.sum((u_test - u_test_mean)**2)
+        r_squared = 1 - r2_numerator / r2_denominator
+    print(f"Validation Loss: {val_loss:7.5f}, mean Relative L2 Loss: {rel_l2_loss:7.5f}, R-squared: {r_squared:7.5f}")
